@@ -1,0 +1,198 @@
+//	CREATE
+#region MOVIMENTAÇÃO BASE
+spd = 5;	//	VELOCIDADE DO JOGADOR
+hspd = 0;	// VELOCIDADE HORIZONTAL
+vspd = 0;	// VELOCIADE VERTICAL
+jforce = -10;	// FORÇA DO PULO
+grvt = 0.4;	// GRAVIDADE
+	// TOTAL DE PULOS	
+#endregion 
+
+#region DASH
+estado = "idle";	//VARIÁVEL PARA CONFERIR OS ESTADOS
+estado_dash = "ndash";	// VARIÁVEL PARA CONFERIR ESTADO DO DASH
+dash_speed = 40;	// VELOCIDADE DO DASH
+alarm_dash = false;	//	ALARME DO DASH
+dar_dash = true;	
+#endregion 
+
+//	STEP
+
+#region CONTROLES/VARIAVEIS
+var _key_right, _key_left, _key_jump, _key_dash, _val_dash, _chao 
+
+_key_right = keyboard_check(ord("D"));	// direita
+_key_left = keyboard_check(ord("A"));	// esquerda
+_key_jump = keyboard_check_pressed(vk_space);	// pular
+_key_dash = keyboard_check_pressed(ord("L"));	// investida/dash
+_chao = place_meeting(x, y + 1, obj_colisor);	// verificação de colisão
+
+
+#endregion
+
+
+#region MOVIMENTAÇÃO
+
+//	definindo direção (direta||esquerda)
+var _move = _key_right - _key_left;	
+
+// aplicando velocidade horizontal
+hspd = _move * spd;	
+
+//	aplicando gravidade
+if(!_chao)
+{
+	vspd = vspd + grvt;
+}
+
+// "Função' p/ alterar direção da sprite
+if (hspd != 0) image_xscale = sign(hspd);
+
+
+if(place_meeting(x, y + 1, obj_colisor))
+{
+	dar_dash = true;	
+}
+
+
+#endregion
+
+
+#region DASH
+
+if(_key_dash and dar_dash)
+{
+	dar_dash = false;
+	estado_dash = "dash";
+	
+	if(alarm_dash == false)
+	{
+		alarm[0] = 15;	
+		alarm_dash = true;
+	}
+}
+	
+if(estado_dash == "dash")
+{
+	instance_create_layer(x, y, "Instances", obj_yanomae_sombra);
+	_val_dash = (_key_right - _key_left) * dash_speed;
+	hspd += lerp(0, _val_dash, 0.3);	
+}
+
+#endregion
+
+
+#region COLISÃO
+
+//	COLISÃO HORIZONTAL
+if (place_meeting(x + hspd, y, obj_colisor))
+{
+	estado = "idle";
+	
+	while(!place_meeting(x + sign(hspd), y, obj_colisor))
+	{
+		x = x + sign(hspd);	
+	}
+	
+	hspd = 0;
+}
+
+// APLICANDO A VELociADE HORIZONTAL AO EIXO X
+x += hspd;
+
+
+//	COLISÃO VERTICAL
+if (place_meeting(x , y + vspd, obj_colisor))
+{
+	
+	while(!place_meeting(x, y + sign(vspd), obj_colisor))
+	{
+		y = y + sign(vspd);	
+	}
+	
+	vspd = 0;
+}
+
+// APLICANDO A VELICADE HORIZONTAL AO EIXO X
+y += vspd;
+
+#endregion
+
+
+#region MÁQUINA DE ESTADO
+
+switch(estado)
+{
+	
+case "idle":
+	{
+		// comportamento do estado
+		sprite_index = spr_yanomae_idle;
+		
+		// condição para mudar de estado
+		if(_key_right or _key_left)
+		{
+			estado = "walk";	
+		}
+		else if (_key_jump)
+		{
+			estado = "jump";
+			vspd = jforce;
+		}
+		break
+	}
+case "jump":
+	{
+		
+		// comportamento
+		
+		
+		
+		
+		//condição de troca
+		if (_chao)
+		{
+			//	REINICIANDO O TOTAL DE PULOS QUANDO O JOGADOR COLIDIR COM O CHÃO
+			estado = "idle";
+			hspd = 0;
+			
+		} 
+		break
+	}
+case "walk":
+	{
+		// comportamento
+		sprite_index = spr_yanomae_walk;
+		
+		// condição de troca
+		if(_move == 0)
+		{
+			estado = "idle";
+			hspd = 0;
+		}
+		else if (_key_jump )
+		{
+			estado = "jump";
+			vspd = jforce;
+		}
+		
+		break
+	}
+}
+
+#endregion
+
+//	ALARM 0
+
+estado_dash = "ndash";
+estado = "idle";
+alarm_dash = false;
+
+
+//	DRAW
+draw_self();
+draw_text(24, 30, estado);
+draw_text(24, 60, estado_dash);
+draw_text(24, 90, "_move: " + string(hspd));
+draw_text(24, 120, "vspd: " + string(vspd));
+

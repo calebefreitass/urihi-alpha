@@ -1,0 +1,72 @@
+#region MÁQUINA DE ESTADO
+
+switch(estado)
+{
+	
+case "idle":
+	{
+		// comportamento do estado
+		sprite_index = spr_yanomae_idle;
+		
+		// condição para mudar de estado
+		if(_key_right or _key_left)
+		{
+			estado = "walk";	
+		}
+		else if (_key_jump and tjump > 0)
+		{
+			estado = "jump";
+			vspd = jforce;
+			//tjump -= 1;
+		}
+		break
+	}
+case "jump":
+	{
+			//comportamento
+	if(vspd > 0)
+	{
+		sprite_index = spr_yanomae_down
+	}
+	else
+	{
+		sprite_index = spr_yanomae_jump
+			
+		if (image_index >= image_number - 1)
+		{
+			image_index = image_number - 1;	
+		}
+			
+	}
+
+		
+		//condição de troca
+		if (vspd = 0 and _chao)
+		{
+			estado = "idle";
+		} 
+		break
+	}
+case "walk":
+	{
+		// comportamento
+		sprite_index = spr_yanomae_walk;
+		
+		// condição de troca
+		if(_move == 0 and _chao)
+		{
+			estado = "idle";
+			hspd = 0;
+		}
+		else if (_key_jump and tjump > 0)
+		{
+			estado = "jump";
+			vspd = jforce;
+			//tjump -= 1;
+		}
+		
+		break
+	}
+}
+
+#endregion

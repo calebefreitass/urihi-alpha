@@ -1,0 +1,8 @@
+estado = "consumivel";
+
+
+
+
+
+
+
